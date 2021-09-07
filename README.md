@@ -15,3 +15,7 @@ docker exec -i -t golang sh
 migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ up
 migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ down
 ```
+
+```bash
+xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable"
+```

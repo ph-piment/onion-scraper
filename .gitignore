@@ -16,3 +16,6 @@
 
 # postgres storage
 data
+
+# vscode setting
+*.code-workspace

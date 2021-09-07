@@ -5,6 +5,16 @@ networks:
     driver: bridge
 
 services:
+  golang:
+    container_name: golang
+    build: ./docker/golang
+    tty: true
+    volumes:
+      - ./:/go/src/github.com/ph-piment/onion-scraper
+      - ./env:/go/src/env
+    networks:
+      - backend
+
   postgres:
     container_name: postgres
     build: ./docker/postgres

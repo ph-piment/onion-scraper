@@ -13,12 +13,6 @@ import (
 
 // Injectors from wire.go:
 
-/*
-func InitializeEvent() Event {
-	wire.Build(NewEvent, NewGreeter, NewMessage)
-	return Event{}
-}
-*/
 func InitializeEvent() usecase.YahooNews {
 	yahooNewsRepository := repository_impl.NewYahooNewsRepository()
 	yahooNews := usecase.NewYahooNews(yahooNewsRepository)

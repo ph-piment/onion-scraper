@@ -24,3 +24,7 @@ xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrast
 cobra init --pkg-name github.com/ph-piment/onion-scraper --viper=false
 cobra add import
 ```
+
+```bash
+wire ./cmd/di
+```

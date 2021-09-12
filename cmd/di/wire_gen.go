@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package main
+package di
 
 import (
 	"github.com/ph-piment/onion-scraper/app/infrastructure/repository_impl"

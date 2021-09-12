@@ -19,3 +19,8 @@ migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path 
 ```bash
 xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrastructure/dao
 ```
+
+```bash
+cobra init --pkg-name github.com/ph-piment/onion-scraper --viper=false
+cobra add import
+```

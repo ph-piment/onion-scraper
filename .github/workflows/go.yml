@@ -10,6 +10,27 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+
+    # `container-job` で実行するサービスコンテナ
+    services:
+      # サービスコンテナへのアクセスに使用されるラベル
+      postgres:
+        # Docker Hub のイメージ
+        image: postgres:13.4-alpine
+        # postgres のパスワードを入力する
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: os
+        # postgres が起動するまで待機するようにヘルスチェックを設定する
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
     - uses: actions/checkout@v2
 
@@ -17,6 +38,12 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
+
+    - name: Set up Migrate
+      run: curl -L https://github.com/golang-migrate/migrate/releases/download/v4.10.0/migrate.linux-amd64.tar.gz | tar xvz -C /usr/local/bin && mv /usr/local/bin/migrate.linux-amd64 /usr/local/bin/migrate
+
+    - name: Migrate
+      run: migrate -database 'postgres://root:root@127.0.0.1:5432/os?sslmode=disable' -path ./migrations/ up
 
     - name: Build
       run: go build -v ./...

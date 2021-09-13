@@ -17,7 +17,7 @@ migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path 
 ```
 
 ```bash
-xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrastructure/dao
+xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrastructure/dao --src templates
 ```
 
 ```bash

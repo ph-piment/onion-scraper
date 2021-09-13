@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/ph-piment/onion-scraper/app/domain/entity"
 )
 
 func Test_NewYahooNewsRepository(t *testing.T) {
@@ -25,22 +27,11 @@ func Test_NewYahooNewsRepository(t *testing.T) {
 }
 
 func Test_ScrapingListFromWEB(t *testing.T) {
-	type fields struct {
-		id          uint64
-		title       string
-		description string
-	}
 	tests := []struct {
-		name   string
-		fields fields
+		name string
 	}{
 		{
-			name: "NewYahooNewsRepository",
-			fields: fields{
-				id:          1,
-				title:       "title1",
-				description: "description1",
-			},
+			name: "ScrapingListFromWEB",
 		},
 	}
 	for _, r := range tests {
@@ -61,4 +52,34 @@ func Test_ScrapingListFromWEB(t *testing.T) {
 }
 
 func Test_ImportToDB(t *testing.T) {
+	type fields struct {
+		entities []*entity.YahooNews
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "ImportToDB",
+			fields: fields{
+				entities: []*entity.YahooNews{
+					entity.NewYahooNews(1, "aaa", "bbb"),
+					entity.NewYahooNews(2, "ccc", "ddd"),
+					entity.NewYahooNews(3, "eee", "fff"),
+				},
+			},
+		},
+	}
+	for _, r := range tests {
+		t.Run(r.name, func(t *testing.T) {
+			got := NewYahooNewsRepository()
+			if got == nil {
+				t.Errorf("NewYahooNewsRepository() = nil")
+			}
+			err := got.ImportToDB(context.Background(), r.fields.entities, time.Now())
+			if err != nil {
+				t.Errorf("ImportToDB error = %v", err)
+			}
+		})
+	}
 }

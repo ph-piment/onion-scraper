@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/ph-piment/onion-scraper/branch/main/graph/badge.svg?token=A8HSHCRM5X)](https://codecov.io/gh/ph-piment/onion-scraper)
+
 # onion-scraper
  Scraping with onion arch.
 

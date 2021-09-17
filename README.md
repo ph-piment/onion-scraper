@@ -8,25 +8,20 @@
 ```bash
 git clone git@github.com:ph-piment/onion-scraper.git
 cd onion-scraper
-docker-compose up -d
+make up-docker
 # view http://localhost:16543
-```
 
-```bash
+# migrate
 docker exec -i -t golang sh
 migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ up
 migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ down
-```
 
-```bash
-xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrastructure/dao --src templates
-```
+# generate xo
+make gen-xo
 
-```bash
-cobra init --pkg-name github.com/ph-piment/onion-scraper --viper=false
-cobra add import
-```
+# add command
+make add-command hoge
 
-```bash
-wire ./cmd/di
+# generate wire
+make gen-wire
 ```

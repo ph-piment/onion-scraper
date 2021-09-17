@@ -4,6 +4,9 @@
 ADD_COMMAND_NAME = ""
 APP      = ./bin/os
 
+run:
+	go build -o ${APP} ./main.go; ./${APP} import
+
 up-docker:
 	docker-compose up -d
 

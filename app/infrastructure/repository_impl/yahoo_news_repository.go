@@ -36,7 +36,7 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context, now ti
 			return
 		}
 
-		//		fmt.Printf("title: %v, sub: %v\n", title, sub)
+		fmt.Printf("title: %v, sub: %v\n", title, sub)
 		news := entity.NewYahooNews(0, title, sub)
 		result = append(result, news)
 	})

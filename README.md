@@ -24,4 +24,7 @@ make add-command hoge
 
 # generate wire
 make gen-wire
+
+# run
+make run
 ```

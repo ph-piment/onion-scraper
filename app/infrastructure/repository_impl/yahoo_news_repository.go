@@ -24,7 +24,7 @@ func NewYahooNewsRepository() repository.YahooNewsRepository {
 	}
 }
 
-func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context, now time.Time) ([]*entity.YahooNews, error) {
+func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*entity.YahooNews, error) {
 	c := colly.NewCollector()
 
 	selector := ".newsFeed_list > li"

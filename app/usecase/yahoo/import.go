@@ -24,7 +24,7 @@ func NewYahooNews(
 }
 
 func (uc *yahooNews) Import(ctx context.Context, now time.Time) error {
-	rows, err := uc.repo.ScrapingListFromWEB(ctx, now)
+	rows, err := uc.repo.ScrapingListFromWEB(ctx)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,6 @@ import (
 )
 
 type YahooNewsRepository interface {
-	ScrapingListFromWEB(ctx context.Context, now time.Time) ([]*entity.YahooNews, error)
+	ScrapingListFromWEB(ctx context.Context) ([]*entity.YahooNews, error)
 	ImportToDB(ctx context.Context, list []*entity.YahooNews, now time.Time) error
 }

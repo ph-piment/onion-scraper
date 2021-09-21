@@ -40,7 +40,7 @@ func Test_ScrapingListFromWEB(t *testing.T) {
 			if got == nil {
 				t.Errorf("NewYahooNewsRepository() = nil")
 			}
-			rows, err := got.ScrapingListFromWEB(context.Background(), time.Now())
+			rows, err := got.ScrapingListFromWEB(context.Background())
 			if err != nil {
 				t.Errorf("ScrapingListFromWEB error = %v", err)
 			}

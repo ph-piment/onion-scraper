@@ -42,7 +42,7 @@ jobs:
         PGSSLMODE: disable
 
     - name: Set up Migrate
-      run: curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_arm64.tar.gz | tar xvz -C /usr/local/bin
+      run: curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_amd64.tar.gz | tar xvz -C /usr/local/bin
 
     - name: Migrate
       run: cat ./schemas/postgres/* | psqldef -h postgres -U root -W root os

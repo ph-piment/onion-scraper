@@ -45,7 +45,7 @@ jobs:
       run: curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_amd64.tar.gz | tar xvz -C /usr/local/bin
 
     - name: Migrate
-      run: cat ./schemas/postgres/* | psqldef -h postgres -U root -W root os
+      run: cat ./schemas/postgres/* | psqldef -h 127.0.0.1 -U root -W root os
 
     - name: Build
       run: go build -v ./...

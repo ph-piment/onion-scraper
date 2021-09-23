@@ -10,4 +10,4 @@ ENV WORKDIR_PATH /go/src/github.com/ph-piment/onion-scraper
 WORKDIR ${WORKDIR_PATH}
 ADD . ${WORKDIR_PATH}
 
-RUN curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_amd64.tar.gz | tar xvz -C /usr/local/bin
+RUN curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_arm64.tar.gz | tar xvz -C /usr/local/bin

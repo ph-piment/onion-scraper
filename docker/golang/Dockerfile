@@ -10,4 +10,4 @@ ENV WORKDIR_PATH /go/src/github.com/ph-piment/onion-scraper
 WORKDIR ${WORKDIR_PATH}
 ADD . ${WORKDIR_PATH}
 
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.10.0/migrate.linux-amd64.tar.gz | tar xvz -C /usr/local/bin && mv /usr/local/bin/migrate.linux-amd64 /usr/local/bin/migrate
+RUN curl -L https://github.com/k0kubun/sqldef/releases/download/v0.11.4/psqldef_linux_amd64.tar.gz | tar xvz -C /usr/local/bin

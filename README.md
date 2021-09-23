@@ -12,9 +12,8 @@ make up-docker
 # view http://localhost:16543
 
 # migrate
-docker exec -i -t golang sh
-migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ up
-migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ down
+make migrate-dry-run
+make migrate
 
 # generate xo
 make gen-xo

@@ -26,8 +26,11 @@ add-command:
 gen-wire:
 	wire ./cmd/di
 
+migrate-dry-run:
+	docker exec -it -w /go/src/github.com/ph-piment/onion-scraper golang /bin/sh -c "cat ./schemas/postgres/* | psqldef -h postgres -U root -W root os --dry-run"
+
 migrate:
-	migrate -database 'postgres://root:root@postgres:5432/os?sslmode=disable' -path ./migrations/ up
+	docker exec -it -w /go/src/github.com/ph-piment/onion-scraper golang /bin/sh -c "cat ./schemas/postgres/* | psqldef -h postgres -U root -W root os"
 
 gen-xo:
 	xo schema "pgsql://root:root@localhost:5432/os?sslmode=disable" -o ./app/infrastructure/dao --src templates

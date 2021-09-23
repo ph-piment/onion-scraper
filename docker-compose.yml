@@ -10,7 +10,7 @@ services:
     build: ./docker/golang
     tty: true
     environment:
-      PGSSLMODE: "disable"
+      PGSSLMODE: disable
     volumes:
       - ./:/go/src/github.com/ph-piment/onion-scraper
       - ./env:/go/src/env

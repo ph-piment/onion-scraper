@@ -53,17 +53,22 @@ func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.
 	}
 	defer db.Close()
 
+	bulks := make([]dao.News, len(rows))
 	for _, r := range rows {
-		news := &dao.News{
-			Title:       r.GetTitle(),
-			Description: r.GetDescription(),
-			CreatedAt:   now,
-			UpdatedAt:   now,
-		}
-		err := news.Insert(context.Background(), db, now)
-		if err != nil {
-			return err
-		}
+		bulks = append(
+			bulks,
+			dao.News{
+				Title:       r.GetTitle(),
+				Description: r.GetDescription(),
+				CreatedAt:   now,
+				UpdatedAt:   now,
+			},
+		)
+	}
+	news := dao.News{}
+	err = news.BulkInsert(context.Background(), db, bulks, now)
+	if err != nil {
+		return err
 	}
 
 	return nil

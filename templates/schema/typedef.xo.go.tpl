@@ -46,6 +46,18 @@ func New{{ $t.GoName }}(
 	return nil
 }
 
+// {{ func_name_context "BulkInsert" }} inserts the {{ $t.GoName }} to the database.
+{{ recv_context $t "BulkInsert" }} {
+	// bulk insert (primary key generated and returned by database)
+	{{ sqlstr "bulk_insert" $t }}
+	// run
+	{{ logf $t $t.PrimaryKeys }}
+	if _, err := db.NamedExec(sqlstr, rows); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
 {{ if eq (len $t.Fields) (len $t.PrimaryKeys) -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 {{- else -}}

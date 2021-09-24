@@ -36,46 +36,9 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "insert" $t }}
 	// run
 	{{ logf $t $t.PrimaryKeys }}
-{{ if (driver "postgres") -}}
 	if err := {{ db_prefix "QueryRow" true $t }}.Scan(&{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }}); err != nil {
 		return logerror(err)
 	}
-{{- else if (driver "sqlserver") -}}
-	rows, err := {{ db_prefix "Query" true $t }}
-	if err != nil {
-		return logerror(err)
-	}
-	defer rows.Close()
-	// retrieve id
-	var id int64
-	for rows.Next() {
-		if err := rows.Scan(&id); err != nil {
-			return logerror(err)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return logerror(err)
-	}
-{{- else if (driver "oracle") -}}
-	var id int64
-	if _, err := {{ db_prefix "Exec" true $t (named "pk" "&id" true) }}; err != nil {
-		return logerror(err)
-	}
-{{- else -}}
-	res, err := {{ db_prefix "Exec" true $t }}
-	if err != nil {
-		return logerror(err)
-	}
-	// retrieve id
-	id, err := res.LastInsertId()
-	if err != nil {
-		return logerror(err)
-	}
-{{- end -}}
-{{ if not (driver "postgres") -}}
-	// set primary key
-	{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }} = {{ (index $t.PrimaryKeys 0).Type }}(id)
-{{- end }}
 {{- end }}
 	return nil
 }

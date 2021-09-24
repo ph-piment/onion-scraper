@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ph-piment/onion-scraper/app/domain/entity"
 	"github.com/ph-piment/onion-scraper/app/domain/repository"
 	"github.com/ph-piment/onion-scraper/app/infrastructure/dao"
-	"github.com/xo/dburl"
 )
 
 type yahooNewsRepository struct {
@@ -46,7 +46,7 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*en
 }
 
 func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.YahooNews, now time.Time) error {
-	db, err := dburl.Open("postgresql://root:root@localhost:5432/os?sslmode=disable")
+	db, err := sqlx.Open("postgres", "user=root dbname=os password=root sslmode=disable")
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 		return err

@@ -2,7 +2,6 @@ package repository_impl
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -60,12 +59,8 @@ func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.
 			Description: r.GetDescription(),
 			CreatedAt:   now,
 			UpdatedAt:   now,
-			DeletedAt: sql.NullTime{
-				Time:  now,
-				Valid: false,
-			},
 		}
-		err := news.Insert(context.Background(), db)
+		err := news.Insert(context.Background(), db, now)
 		if err != nil {
 			return err
 		}

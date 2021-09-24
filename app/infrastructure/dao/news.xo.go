@@ -5,6 +5,8 @@ package dao
 import (
 	"context"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // News represents a row from 'public.news'.
@@ -33,7 +35,7 @@ func NewNews(
 }
 
 // Insert inserts the News to the database.
-func (n *News) Insert(ctx context.Context, db DB, now time.Time) error {
+func (n *News) Insert(ctx context.Context, db *sqlx.DB, now time.Time) error {
 	n.CreatedAt = now
 	n.UpdatedAt = now
 
@@ -52,7 +54,7 @@ func (n *News) Insert(ctx context.Context, db DB, now time.Time) error {
 }
 
 // Update updates a News in the database.
-func (n *News) Update(ctx context.Context, db DB, now time.Time) error {
+func (n *News) Update(ctx context.Context, db *sqlx.DB, now time.Time) error {
 	n.UpdatedAt = now
 
 	// update with composite primary key
@@ -68,7 +70,7 @@ func (n *News) Update(ctx context.Context, db DB, now time.Time) error {
 }
 
 // Upsert performs an upsert for News.
-func (n *News) Upsert(ctx context.Context, db DB, now time.Time) error {
+func (n *News) Upsert(ctx context.Context, db *sqlx.DB, now time.Time) error {
 	// upsert
 	const sqlstr = `INSERT INTO public.news (` +
 		`id, title, description, created_at, updated_at` +
@@ -87,7 +89,7 @@ func (n *News) Upsert(ctx context.Context, db DB, now time.Time) error {
 }
 
 // Delete deletes the News from the database.
-func (n *News) Delete(ctx context.Context, db DB, now time.Time) error {
+func (n *News) Delete(ctx context.Context, db *sqlx.DB, now time.Time) error {
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.news ` +
 		`WHERE id = $1`
@@ -102,7 +104,7 @@ func (n *News) Delete(ctx context.Context, db DB, now time.Time) error {
 // NewsByID retrieves a row from 'public.news' as a News.
 //
 // Generated from index 'news_pkey'.
-func NewsByID(ctx context.Context, db DB, id int) (*News, error) {
+func NewsByID(ctx context.Context, db *sqlx.DB, id int) (*News, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`id, title, description, created_at, updated_at ` +

@@ -10,12 +10,30 @@ import (
 
 // News represents a row from 'public.news'.
 type News struct {
-	ID          int          `json:"id"`          // id
-	Title       string       `json:"title"`       // title
-	Description string       `json:"description"` // description
-	CreatedAt   time.Time    `json:"created_at"`  // created_at
-	UpdatedAt   time.Time    `json:"updated_at"`  // updated_at
-	DeletedAt   sql.NullTime `json:"deleted_at"`  // deleted_at
+	ID          int          `db:"id"`          // id
+	Title       string       `db:"title"`       // title
+	Description string       `db:"description"` // description
+	CreatedAt   time.Time    `db:"created_at"`  // created_at
+	UpdatedAt   time.Time    `db:"updated_at"`  // updated_at
+	DeletedAt   sql.NullTime `db:"deleted_at"`  // deleted_at
+}
+
+func NewNews(
+	ID int,
+	Title string,
+	Description string,
+	CreatedAt time.Time,
+	UpdatedAt time.Time,
+	DeletedAt sql.NullTime,
+) *News {
+	return &News{
+		ID:          ID,
+		Title:       Title,
+		Description: Description,
+		CreatedAt:   CreatedAt,
+		UpdatedAt:   UpdatedAt,
+		DeletedAt:   DeletedAt,
+	}
 }
 
 // Insert inserts the News to the database.

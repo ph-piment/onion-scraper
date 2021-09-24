@@ -6,8 +6,19 @@
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
-	{{ field . }}
+	{{ .GoName }} {{ type .Type }} `db:"{{ .SQLName }}"` // {{ .SQLName }}
 {{ end }}}
+
+func New{{ $t.GoName }}(
+{{ range $t.Fields -}}
+	{{ .GoName }} {{ type .Type }},
+{{ end }}) *{{ $t.GoName }} {
+	return &{{ $t.GoName }}{
+{{ range $t.Fields -}}
+	{{ .GoName }}: {{ .GoName }},
+{{ end }}
+	}
+}
 
 {{ if $t.PrimaryKeys -}}
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.

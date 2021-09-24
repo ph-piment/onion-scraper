@@ -46,14 +46,6 @@ func New{{ $t.GoName }}(
 	return nil
 }
 
-{{ if context_both -}}
-// Insert inserts the {{ $t.GoName }} to the database.
-{{ recv $t "Insert" }} {
-	return {{ short $t }}.InsertContext(context.Background(), db)
-}
-{{- end }}
-
-
 {{ if eq (len $t.Fields) (len $t.PrimaryKeys) -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 {{- else -}}
@@ -72,13 +64,6 @@ func New{{ $t.GoName }}(
 	return nil
 }
 
-{{ if context_both -}}
-// Update updates a {{ $t.GoName }} in the database.
-{{ recv $t "Update" }} {
-	return {{ short $t }}.UpdateContext(context.Background(), db)
-}
-{{- end }}
-
 // {{ func_name_context "Upsert" }} performs an upsert for {{ $t.GoName }}.
 {{ recv_context $t "Upsert" }} {
 	// upsert
@@ -91,12 +76,6 @@ func New{{ $t.GoName }}(
 	return nil
 }
 
-{{ if context_both -}}
-// Upsert performs an upsert for {{ $t.GoName }}.
-{{ recv $t "Upsert" }} {
-	return {{ short $t }}.UpsertContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}
 
 // {{ func_name_context "Delete" }} deletes the {{ $t.GoName }} from the database.
@@ -121,10 +100,4 @@ func New{{ $t.GoName }}(
 	return nil
 }
 
-{{ if context_both -}}
-// Delete deletes the {{ $t.GoName }} from the database.
-{{ recv $t "Delete" }} {
-	return {{ short $t }}.DeleteContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}

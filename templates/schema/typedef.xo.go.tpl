@@ -7,33 +7,11 @@
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
 	{{ field . }}
-{{ end }}
-{{- if $t.PrimaryKeys -}}
-	// xo fields
-	_exists, _deleted bool
-{{ end -}}
-}
+{{ end }}}
 
 {{ if $t.PrimaryKeys -}}
-// Exists returns true when the {{ $t.GoName }} exists in the database.
-func ({{ short $t }} *{{ $t.GoName }}) Exists() bool {
-	return {{ short $t }}._exists
-}
-
-// Deleted returns true when the {{ $t.GoName }} has been marked for deletion from
-// the database.
-func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
-	return {{ short $t }}._deleted
-}
-
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
 {{ recv_context $t "Insert" }} {
-	switch {
-	case {{ short $t }}._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 {{ if $t.Manual -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
@@ -88,8 +66,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }} = {{ (index $t.PrimaryKeys 0).Type }}(id)
 {{- end }}
 {{- end }}
-	// set exists
-	{{ short $t }}._exists = true
 	return nil
 }
 
@@ -106,12 +82,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 {{- else -}}
 // {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.
 {{ recv_context $t "Update" }} {
-	switch {
-	case !{{ short $t }}._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
 	// run
@@ -129,30 +99,8 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 {{- end }}
 
-// {{ func_name_context "Save" }} saves the {{ $t.GoName }} to the database.
-{{ recv_context $t "Save" }} {
-	if {{ short $t }}.Exists() {
-		return {{ short $t }}.{{ func_name_context "Update" }}({{ if context }}ctx, {{ end }}db)
-	}
-	return {{ short $t }}.{{ func_name_context "Insert" }}({{ if context }}ctx, {{ end }}db)
-}
-
-{{ if context_both -}}
-// Save saves the {{ $t.GoName }} to the database.
-{{ recv $t "Save" }} {
-	if {{ short $t }}._exists {
-		return {{ short $t }}.UpdateContext(context.Background(), db)
-	}
-	return {{ short $t }}.InsertContext(context.Background(), db)
-}
-{{- end }}
-
 // {{ func_name_context "Upsert" }} performs an upsert for {{ $t.GoName }}.
 {{ recv_context $t "Upsert" }} {
-	switch {
-	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	{{ sqlstr "upsert" $t }}
 	// run
@@ -160,8 +108,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
 		return logerror(err)
 	}
-	// set exists
-	{{ short $t }}._exists = true
 	return nil
 }
 
@@ -175,12 +121,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 
 // {{ func_name_context "Delete" }} deletes the {{ $t.GoName }} from the database.
 {{ recv_context $t "Delete" }} {
-	switch {
-	case !{{ short $t }}._exists: // doesn't exist
-		return nil
-	case {{ short $t }}._deleted: // deleted
-		return nil
-	}
 {{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
 	{{ sqlstr "delete" $t }}
@@ -198,8 +138,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 		return logerror(err)
 	}
 {{- end }}
-	// set deleted
-	{{ short $t }}._deleted = true
 	return nil
 }
 

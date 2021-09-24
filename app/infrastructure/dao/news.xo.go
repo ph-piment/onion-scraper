@@ -16,29 +16,10 @@ type News struct {
 	CreatedAt   time.Time    `json:"created_at"`  // created_at
 	UpdatedAt   time.Time    `json:"updated_at"`  // updated_at
 	DeletedAt   sql.NullTime `json:"deleted_at"`  // deleted_at
-	// xo fields
-	_exists, _deleted bool
-}
-
-// Exists returns true when the News exists in the database.
-func (n *News) Exists() bool {
-	return n._exists
-}
-
-// Deleted returns true when the News has been marked for deletion from
-// the database.
-func (n *News) Deleted() bool {
-	return n._deleted
 }
 
 // Insert inserts the News to the database.
 func (n *News) Insert(ctx context.Context, db DB) error {
-	switch {
-	case n._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case n._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.news (` +
 		`title, description, created_at, updated_at, deleted_at` +
@@ -50,19 +31,11 @@ func (n *News) Insert(ctx context.Context, db DB) error {
 	if err := db.QueryRowContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.DeletedAt).Scan(&n.ID); err != nil {
 		return logerror(err)
 	}
-	// set exists
-	n._exists = true
 	return nil
 }
 
 // Update updates a News in the database.
 func (n *News) Update(ctx context.Context, db DB) error {
-	switch {
-	case !n._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case n._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.news SET ` +
 		`title = $1, description = $2, created_at = $3, updated_at = $4, deleted_at = $5 ` +
@@ -75,20 +48,8 @@ func (n *News) Update(ctx context.Context, db DB) error {
 	return nil
 }
 
-// Save saves the News to the database.
-func (n *News) Save(ctx context.Context, db DB) error {
-	if n.Exists() {
-		return n.Update(ctx, db)
-	}
-	return n.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for News.
 func (n *News) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case n._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	const sqlstr = `INSERT INTO public.news (` +
 		`id, title, description, created_at, updated_at, deleted_at` +
@@ -103,19 +64,11 @@ func (n *News) Upsert(ctx context.Context, db DB) error {
 	if _, err := db.ExecContext(ctx, sqlstr, n.ID, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.DeletedAt); err != nil {
 		return logerror(err)
 	}
-	// set exists
-	n._exists = true
 	return nil
 }
 
 // Delete deletes the News from the database.
 func (n *News) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !n._exists: // doesn't exist
-		return nil
-	case n._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.news ` +
 		`WHERE id = $1`
@@ -124,8 +77,6 @@ func (n *News) Delete(ctx context.Context, db DB) error {
 	if _, err := db.ExecContext(ctx, sqlstr, n.ID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	n._deleted = true
 	return nil
 }
 
@@ -140,9 +91,7 @@ func NewsByID(ctx context.Context, db DB, id int) (*News, error) {
 		`WHERE id = $1`
 	// run
 	logf(sqlstr, id)
-	n := News{
-		_exists: true,
-	}
+	n := News{}
 	if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt, &n.UpdatedAt, &n.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}

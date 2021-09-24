@@ -9,9 +9,6 @@
 	logf(sqlstr, {{ params $i.Fields false }})
 {{- if $i.IsUnique }}
 	{{ short $i.Table }} := {{ $i.Table.GoName }}{
-	{{- if $i.Table.PrimaryKeys }}
-		_exists: true,
-	{{ end -}}
 	}
 	if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
 		return nil, logerror(err)
@@ -27,9 +24,6 @@
 	var res []*{{ $i.Table.GoName }}
 	for rows.Next() {
 		{{ short $i.Table }} := {{ $i.Table.GoName }}{
-		{{- if $i.Table.PrimaryKeys }}
-			_exists: true,
-		{{ end -}}
 		}
 		// scan
 		if err := rows.Scan({{ names_ignore (print "&" (short $i.Table) ".")  $i.Table }}); err != nil {

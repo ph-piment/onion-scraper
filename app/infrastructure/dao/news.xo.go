@@ -37,7 +37,10 @@ func NewNews(
 }
 
 // Insert inserts the News to the database.
-func (n *News) Insert(ctx context.Context, db DB) error {
+func (n *News) Insert(ctx context.Context, db DB, now time.Time) error {
+	n.CreatedAt = now
+	n.UpdatedAt = now
+
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.news (` +
 		`title, description, created_at, updated_at, deleted_at` +
@@ -53,7 +56,9 @@ func (n *News) Insert(ctx context.Context, db DB) error {
 }
 
 // Update updates a News in the database.
-func (n *News) Update(ctx context.Context, db DB) error {
+func (n *News) Update(ctx context.Context, db DB, now time.Time) error {
+	n.UpdatedAt = now
+
 	// update with composite primary key
 	const sqlstr = `UPDATE public.news SET ` +
 		`title = $1, description = $2, created_at = $3, updated_at = $4, deleted_at = $5 ` +
@@ -67,7 +72,7 @@ func (n *News) Update(ctx context.Context, db DB) error {
 }
 
 // Upsert performs an upsert for News.
-func (n *News) Upsert(ctx context.Context, db DB) error {
+func (n *News) Upsert(ctx context.Context, db DB, now time.Time) error {
 	// upsert
 	const sqlstr = `INSERT INTO public.news (` +
 		`id, title, description, created_at, updated_at, deleted_at` +
@@ -86,7 +91,7 @@ func (n *News) Upsert(ctx context.Context, db DB) error {
 }
 
 // Delete deletes the News from the database.
-func (n *News) Delete(ctx context.Context, db DB) error {
+func (n *News) Delete(ctx context.Context, db DB, now time.Time) error {
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.news ` +
 		`WHERE id = $1`

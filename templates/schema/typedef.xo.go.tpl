@@ -32,6 +32,9 @@ func New{{ $t.GoName }}(
 		return logerror(err)
 	}
 {{- else -}}
+	{{ range $t.Fields -}}
+		{{ if or (eq .GoName "CreatedAt") (eq .GoName "UpdatedAt") -}} {{ short $t }}.{{ .GoName }} = now {{ end }}
+	{{ end }}
 	// insert (primary key generated and returned by database)
 	{{ sqlstr "insert" $t }}
 	// run
@@ -56,6 +59,9 @@ func New{{ $t.GoName }}(
 {{- else -}}
 // {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.
 {{ recv_context $t "Update" }} {
+	{{ range $t.Fields -}}
+		{{ if (eq .GoName "UpdatedAt") -}} {{ short $t }}.{{ .GoName }} = now {{ end }}
+	{{ end }}
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
 	// run

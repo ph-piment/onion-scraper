@@ -340,6 +340,9 @@ func (f *Funcs) recv(name string, context bool, t gotpl.Table, v interface{}) st
 		p = append(p, "ctx context.Context")
 	}
 	p = append(p, "db *sqlx.DB")
+	if name == "BulkInsert" {
+		p = append(p, "rows []"+t.GoName)
+	}
 	p = append(p, "now time.Time")
 	switch x := v.(type) {
 	case gotpl.ForeignKey:
@@ -654,6 +657,8 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_insert_manual(v)
 	case "insert":
 		lines = f.sqlstr_insert(v)
+	case "bulk_insert":
+		lines = f.sqlstr_bulk_insert(v)
 	case "update":
 		lines = f.sqlstr_update(v)
 	case "upsert":
@@ -696,6 +701,32 @@ func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 17: %T ]]", v)}
 }
 
+// sqlstr_bulk_insert_base builds an INSERT query
+// If not all, sequence columns are skipped.
+func (f *Funcs) sqlstr_bulk_insert_base(all bool, v interface{}) []string {
+	switch x := v.(type) {
+	case gotpl.Table:
+		// build names and values
+		var fields, vals []string
+		var i int
+		for _, z := range x.Fields {
+			if z.IsSequence && !all {
+				continue
+			}
+			fields, vals = append(fields, f.colname(z)), append(vals, ":"+f.colname(z))
+			i++
+		}
+		return []string{
+			"INSERT INTO " + f.schemafn(x.SQLName) + " (",
+			strings.Join(fields, ", "),
+			") VALUES (",
+			strings.Join(vals, ", "),
+			")",
+		}
+	}
+	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 17: %T ]]", v)}
+}
+
 // sqlstr_insert_manual builds an INSERT query that inserts all fields.
 func (f *Funcs) sqlstr_insert_manual(v interface{}) []string {
 	return f.sqlstr_insert_base(true, v)
@@ -722,6 +753,23 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		case "sqlserver":
 			lines[len(lines)-1] += "; SELECT ID = CONVERT(BIGINT, SCOPE_IDENTITY())"
 		}
+		return lines
+	}
+	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 18: %T ]]", v)}
+}
+
+// sqlstr_bulk_insert builds an INSERT query, skipping the sequence field with
+// applicable RETURNING clause for generated primary key fields.
+func (f *Funcs) sqlstr_bulk_insert(v interface{}) []string {
+	switch x := v.(type) {
+	case gotpl.Table:
+		var seq gotpl.Field
+		for _, field := range x.Fields {
+			if field.IsSequence {
+				seq = field
+			}
+		}
+		lines := f.sqlstr_bulk_insert_base(false, v)
 		return lines
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 18: %T ]]", v)}

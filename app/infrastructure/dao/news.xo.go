@@ -54,13 +54,13 @@ func (n *News) Insert(ctx context.Context, db *sqlx.DB, now time.Time) error {
 }
 
 // BulkInsert inserts the News to the database.
-func (n *News) BulkInsert(ctx context.Context, db *sqlx.DB, rows []*News, now time.Time) error {
+func (n *News) BulkInsert(ctx context.Context, db *sqlx.DB, rows []News, now time.Time) error {
 	// bulk insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.news (` +
 		`title, description, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`) RETURNING id`
+		`:title, :description, :created_at, :updated_at` +
+		`)`
 	// run
 	logf(sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt)
 	if _, err := db.NamedExec(sqlstr, rows); err != nil {

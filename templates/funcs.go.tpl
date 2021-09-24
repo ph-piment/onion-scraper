@@ -340,6 +340,7 @@ func (f *Funcs) recv(name string, context bool, t gotpl.Table, v interface{}) st
 		p = append(p, "ctx context.Context")
 	}
 	p = append(p, "db DB")
+	p = append(p, "now time.Time")
 	switch x := v.(type) {
 	case gotpl.ForeignKey:
 		r = append(r, "*"+x.RefTable)

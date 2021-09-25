@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gocolly/colly"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ph-piment/onion-scraper/app/domain/entity"
 	"github.com/ph-piment/onion-scraper/app/domain/repository"
@@ -45,15 +44,8 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*en
 	return result, nil
 }
 
-func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.YahooNews, now time.Time) error {
-	db, err := sqlx.Open("postgres", "user=root dbname=os password=root sslmode=disable")
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return err
-	}
-	defer db.Close()
-
-	bulks := make([]dao.News, len(rows))
+func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, db interface{}, rows []*entity.YahooNews, now time.Time) error {
+	bulks := make([]dao.News, 0, len(rows))
 	for _, r := range rows {
 		bulks = append(
 			bulks,
@@ -66,7 +58,7 @@ func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.
 		)
 	}
 	news := dao.News{}
-	err = news.BulkInsert(context.Background(), db, bulks, now)
+	err := news.BulkInsert(context.Background(), db, bulks, now)
 	if err != nil {
 		return err
 	}

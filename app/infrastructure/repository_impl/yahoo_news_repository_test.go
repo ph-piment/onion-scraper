@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/ph-piment/onion-scraper/app/domain/entity"
 )
 
@@ -70,13 +71,18 @@ func Test_ImportToDB(t *testing.T) {
 			},
 		},
 	}
+	db, err := sqlx.Open("postgres", "user=root dbname=os password=root sslmode=disable")
+	if err != nil {
+		t.Errorf("Error: %v", err)
+	}
+	defer db.Close()
 	for _, r := range tests {
 		t.Run(r.name, func(t *testing.T) {
 			got := NewYahooNewsRepository()
 			if got == nil {
 				t.Errorf("NewYahooNewsRepository() = nil")
 			}
-			err := got.ImportToDB(context.Background(), r.fields.entities, time.Now())
+			err := got.ImportToDB(context.Background(), db, r.fields.entities, time.Now())
 			if err != nil {
 				t.Errorf("ImportToDB error = %v", err)
 			}

@@ -45,13 +45,7 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*en
 	return result, nil
 }
 
-func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.YahooNews, now time.Time) error {
-	db, err := sqlx.Open("postgres", "user=root dbname=os password=root sslmode=disable")
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return err
-	}
-	defer db.Close()
+func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, db *sqlx.DB, rows []*entity.YahooNews, now time.Time) error {
 
 	bulks := make([]dao.News, len(rows))
 	for _, r := range rows {
@@ -66,7 +60,7 @@ func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, rows []*entity.
 		)
 	}
 	news := dao.News{}
-	err = news.BulkInsert(context.Background(), db, bulks, now)
+	err := news.BulkInsert(context.Background(), db, bulks, now)
 	if err != nil {
 		return err
 	}

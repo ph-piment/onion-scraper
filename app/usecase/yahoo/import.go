@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/ph-piment/onion-scraper/app/domain/repository"
 )
 
@@ -28,7 +30,15 @@ func (uc *yahooNews) Import(ctx context.Context, now time.Time) error {
 	if err != nil {
 		return err
 	}
-	err = uc.repo.ImportToDB(ctx, rows, now)
+
+	db, err := sqlx.Open("postgres", "user=root dbname=os password=root sslmode=disable")
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		return err
+	}
+	defer db.Close()
+
+	err = uc.repo.ImportToDB(ctx, db, rows, now)
 	if err != nil {
 		return err
 	}

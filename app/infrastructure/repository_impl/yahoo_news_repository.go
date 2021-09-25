@@ -45,7 +45,7 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*en
 }
 
 func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, db interface{}, rows []*entity.YahooNews, now time.Time) error {
-	bulks := make([]dao.News, len(rows))
+	bulks := make([]dao.News, 0, len(rows))
 	for _, r := range rows {
 		bulks = append(
 			bulks,

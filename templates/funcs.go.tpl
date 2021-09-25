@@ -275,7 +275,7 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 	if context {
 		p = append(p, "ctx context.Context")
 	}
-	p = append(p, "db *sqlx.DB")
+	p = append(p, "idb interface{}")
 	switch x := v.(type) {
 	case gotpl.Query:
 		// params
@@ -339,7 +339,7 @@ func (f *Funcs) recv(name string, context bool, t gotpl.Table, v interface{}) st
 	if context {
 		p = append(p, "ctx context.Context")
 	}
-	p = append(p, "db *sqlx.DB")
+	p = append(p, "idb interface{}")
 	if name == "BulkInsert" {
 		p = append(p, "rows []"+t.GoName)
 	}

@@ -39,8 +39,19 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "insert" $t }}
 	// run
 	{{ logf $t $t.PrimaryKeys }}
-	if err := {{ db_prefix "QueryRow" true $t }}.Scan(&{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }}); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if err := {{ db_prefix "QueryRow" true $t }}.Scan(&{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }}); err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if err := {{ db_prefix "QueryRow" true $t }}.Scan(&{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }}); err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 {{- end }}
 	return nil
@@ -52,8 +63,19 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "bulk_insert" $t }}
 	// run
 	{{ logf $t $t.PrimaryKeys }}
-	if _, err := db.NamedExec(sqlstr, rows); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if _, err := db.NamedExec(sqlstr, rows); err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if _, err := db.NamedExec(sqlstr, rows); err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
@@ -70,8 +92,19 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "update" $t }}
 	// run
 	{{ logf_update $t }}
-	if _, err := {{ db_update "Exec" $t }}; err != nil {
-		return logerror(err)
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if _, err := {{ db_update "Exec" $t }}; err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if _, err := {{ db_update "Exec" $t }}; err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
@@ -82,8 +115,19 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "upsert" $t }}
 	// run
 	{{ logf $t }}
-	if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
-		return logerror(err)
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
@@ -97,17 +141,39 @@ func New{{ $t.GoName }}(
 	{{ sqlstr "delete" $t }}
 	// run
 	{{ logf_pkeys $t }}
-	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
-		return logerror(err)
-	}
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
+	}	
 {{- else -}}
 	// delete with composite primary key
 	{{ sqlstr "delete" $t }}
 	// run
 	{{ logf_pkeys $t }}
-	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
-		return logerror(err)
-	}
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
+				return logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
+				return logerror(err)
+			}
+		default:
+			return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
+	}		
 {{- end }}
 	return nil
 }

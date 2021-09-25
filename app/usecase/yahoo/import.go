@@ -38,9 +38,15 @@ func (uc *yahooNews) Import(ctx context.Context, now time.Time) error {
 	}
 	defer db.Close()
 
-	err = uc.repo.ImportToDB(ctx, db, rows, now)
+	tx, err := db.Beginx()
 	if err != nil {
 		return err
 	}
+	err = uc.repo.ImportToDB(ctx, tx, rows, now)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
 	return nil
 }

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gocolly/colly"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ph-piment/onion-scraper/app/domain/entity"
 	"github.com/ph-piment/onion-scraper/app/domain/repository"
@@ -45,8 +44,7 @@ func (repo *yahooNewsRepository) ScrapingListFromWEB(ctx context.Context) ([]*en
 	return result, nil
 }
 
-func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, db *sqlx.DB, rows []*entity.YahooNews, now time.Time) error {
-
+func (repo *yahooNewsRepository) ImportToDB(ctx context.Context, db interface{}, rows []*entity.YahooNews, now time.Time) error {
 	bulks := make([]dao.News, len(rows))
 	for _, r := range rows {
 		bulks = append(

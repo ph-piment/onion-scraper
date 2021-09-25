@@ -10,14 +10,38 @@
 {{- if $i.IsUnique }}
 	{{ short $i.Table }} := {{ $i.Table.GoName }}{
 	}
-	if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
-		return nil, logerror(err)
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
+				return nil, logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
+				return nil, logerror(err)
+			}
+		default:
+			return nil, logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return &{{ short $i.Table }}, nil
 {{- else }}
-	rows, err := {{ db "Query" $i }}
-	if err != nil {
-		return nil, logerror(err)
+	var rows *sql.Rows
+	switch idb.(type) {
+		case *sqlx.DB:
+			db := idb.(*sqlx.DB)
+			rows, err := {{ db "Query" $i }}
+			if err != nil {
+				return nil, logerror(err)
+			}
+		case *sqlx.Tx:
+			db := idb.(*sqlx.Tx)
+			rows, err := {{ db "Query" $i }}
+			if err != nil {
+				return nil, logerror(err)
+			}
+		default:
+			return nil, logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	defer rows.Close()
 	// process

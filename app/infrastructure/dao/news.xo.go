@@ -4,6 +4,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -35,7 +36,7 @@ func NewNews(
 }
 
 // Insert inserts the News to the database.
-func (n *News) Insert(ctx context.Context, db *sqlx.DB, now time.Time) error {
+func (n *News) Insert(ctx context.Context, idb interface{}, now time.Time) error {
 	n.CreatedAt = now
 	n.UpdatedAt = now
 
@@ -47,14 +48,25 @@ func (n *News) Insert(ctx context.Context, db *sqlx.DB, now time.Time) error {
 		`) RETURNING id`
 	// run
 	logf(sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt)
-	if err := db.QueryRowContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt).Scan(&n.ID); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if err := db.QueryRowContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt).Scan(&n.ID); err != nil {
+			return logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if err := db.QueryRowContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt).Scan(&n.ID); err != nil {
+			return logerror(err)
+		}
+	default:
+		return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
 
 // BulkInsert inserts the News to the database.
-func (n *News) BulkInsert(ctx context.Context, db *sqlx.DB, rows []News, now time.Time) error {
+func (n *News) BulkInsert(ctx context.Context, idb interface{}, rows []News, now time.Time) error {
 	// bulk insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.news (` +
 		`title, description, created_at, updated_at` +
@@ -63,14 +75,25 @@ func (n *News) BulkInsert(ctx context.Context, db *sqlx.DB, rows []News, now tim
 		`)`
 	// run
 	logf(sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt)
-	if _, err := db.NamedExec(sqlstr, rows); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if _, err := db.NamedExec(sqlstr, rows); err != nil {
+			return logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if _, err := db.NamedExec(sqlstr, rows); err != nil {
+			return logerror(err)
+		}
+	default:
+		return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
 
 // Update updates a News in the database.
-func (n *News) Update(ctx context.Context, db *sqlx.DB, now time.Time) error {
+func (n *News) Update(ctx context.Context, idb interface{}, now time.Time) error {
 	n.UpdatedAt = now
 
 	// update with composite primary key
@@ -79,14 +102,25 @@ func (n *News) Update(ctx context.Context, db *sqlx.DB, now time.Time) error {
 		`WHERE id = $5`
 	// run
 	logf(sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.ID)
-	if _, err := db.ExecContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.ID); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if _, err := db.ExecContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.ID); err != nil {
+			return logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if _, err := db.ExecContext(ctx, sqlstr, n.Title, n.Description, n.CreatedAt, n.UpdatedAt, n.ID); err != nil {
+			return logerror(err)
+		}
+	default:
+		return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
 
 // Upsert performs an upsert for News.
-func (n *News) Upsert(ctx context.Context, db *sqlx.DB, now time.Time) error {
+func (n *News) Upsert(ctx context.Context, idb interface{}, now time.Time) error {
 	// upsert
 	const sqlstr = `INSERT INTO public.news (` +
 		`id, title, description, created_at, updated_at` +
@@ -98,21 +132,43 @@ func (n *News) Upsert(ctx context.Context, db *sqlx.DB, now time.Time) error {
 		`title = EXCLUDED.title, description = EXCLUDED.description, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at `
 	// run
 	logf(sqlstr, n.ID, n.Title, n.Description, n.CreatedAt, n.UpdatedAt)
-	if _, err := db.ExecContext(ctx, sqlstr, n.ID, n.Title, n.Description, n.CreatedAt, n.UpdatedAt); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if _, err := db.ExecContext(ctx, sqlstr, n.ID, n.Title, n.Description, n.CreatedAt, n.UpdatedAt); err != nil {
+			return logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if _, err := db.ExecContext(ctx, sqlstr, n.ID, n.Title, n.Description, n.CreatedAt, n.UpdatedAt); err != nil {
+			return logerror(err)
+		}
+	default:
+		return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
 
 // Delete deletes the News from the database.
-func (n *News) Delete(ctx context.Context, db *sqlx.DB, now time.Time) error {
+func (n *News) Delete(ctx context.Context, idb interface{}, now time.Time) error {
 	// delete with single primary key
 	const sqlstr = `DELETE FROM public.news ` +
 		`WHERE id = $1`
 	// run
 	logf(sqlstr, n.ID)
-	if _, err := db.ExecContext(ctx, sqlstr, n.ID); err != nil {
-		return logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if _, err := db.ExecContext(ctx, sqlstr, n.ID); err != nil {
+			return logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if _, err := db.ExecContext(ctx, sqlstr, n.ID); err != nil {
+			return logerror(err)
+		}
+	default:
+		return logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return nil
 }
@@ -120,7 +176,7 @@ func (n *News) Delete(ctx context.Context, db *sqlx.DB, now time.Time) error {
 // NewsByID retrieves a row from 'public.news' as a News.
 //
 // Generated from index 'news_pkey'.
-func NewsByID(ctx context.Context, db *sqlx.DB, id int) (*News, error) {
+func NewsByID(ctx context.Context, idb interface{}, id int) (*News, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`id, title, description, created_at, updated_at ` +
@@ -129,8 +185,19 @@ func NewsByID(ctx context.Context, db *sqlx.DB, id int) (*News, error) {
 	// run
 	logf(sqlstr, id)
 	n := News{}
-	if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt, &n.UpdatedAt); err != nil {
-		return nil, logerror(err)
+	switch idb.(type) {
+	case *sqlx.DB:
+		db := idb.(*sqlx.DB)
+		if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt, &n.UpdatedAt); err != nil {
+			return nil, logerror(err)
+		}
+	case *sqlx.Tx:
+		db := idb.(*sqlx.Tx)
+		if err := db.QueryRowContext(ctx, sqlstr, id).Scan(&n.ID, &n.Title, &n.Description, &n.CreatedAt, &n.UpdatedAt); err != nil {
+			return nil, logerror(err)
+		}
+	default:
+		return nil, logerror(fmt.Errorf("UNSUPPORTED TYPE: %T", idb))
 	}
 	return &n, nil
 }
